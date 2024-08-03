@@ -1,17 +1,14 @@
-pub mod sleep;
-pub mod sender;
 pub mod receiver;
+pub mod sender;
 
-use std::future::Future;
-use std::sync::Arc;
-use tokio::sync::Mutex;
-use self::{sender::TokioSender, receiver::TokioReceiver, sleep::TokioSleep};
+use self::{receiver::TokioReceiver, sender::TokioSender};
 
-pub type Scheduler = nebulas_core::scheduler::Scheduler<Tokio, TokioSleep>;
+pub type Scheduler = nebulas_core::scheduler::Scheduler<Tokio>;
 
 pub struct Tokio;
 
 impl nebulas_core::rt::Runtime for Tokio {
+    type Duration = tokio::time::Duration;
     type Sender = TokioSender;
     type Receiver = TokioReceiver;
 
@@ -19,14 +16,17 @@ impl nebulas_core::rt::Runtime for Tokio {
     where
         F: FnOnce() -> Future + Send + Sync + 'static,
         Future: std::future::Future + Send + 'static,
-        Future::Output: Send + Sync + 'static {
-        tokio::spawn(async move {
-            f().await
-        });
+        Future::Output: Send + Sync + 'static,
+    {
+        tokio::spawn(async move { f().await });
     }
 
     fn channel() -> (Self::Sender, Self::Receiver) {
         let (sender, receiver) = tokio::sync::mpsc::channel(512);
-        (TokioSender(sender), TokioReceiver(Arc::new(Mutex::new(receiver))))
+        (TokioSender::new(sender), TokioReceiver::new(receiver))
+    }
+
+    fn sleep(duration: Self::Duration) -> impl std::future::Future<Output = ()> + Send {
+        async move { tokio::time::sleep(duration).await }
     }
 }

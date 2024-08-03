@@ -2,6 +2,7 @@ pub mod receiver;
 pub mod sender;
 
 pub trait Runtime {
+    type Duration: Send + Sync + 'static;
     type Sender: sender::Sender;
     type Receiver: receiver::Receiver;
 
@@ -12,4 +13,6 @@ pub trait Runtime {
         Future::Output: Send + Sync + 'static;
 
     fn channel() -> (Self::Sender, Self::Receiver);
+
+    fn sleep(duration: Self::Duration) -> impl std::future::Future<Output = ()> + Send;
 }

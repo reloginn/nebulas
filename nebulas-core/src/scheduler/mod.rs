@@ -1,5 +1,4 @@
-use crate::{rt::Runtime, sleep::Sleep};
-use std::marker::PhantomData;
+use crate::rt::Runtime;
 
 use crate::rt::{receiver::Receiver, sender::Sender};
 #[cfg(feature = "chrono")]
@@ -9,37 +8,39 @@ use event::Event;
 
 pub mod event;
 
-pub struct Scheduler<R, S>
+pub struct Scheduler<R>
 where
     R: Runtime,
-    S: Sleep,
 {
     sender: R::Sender,
     receiver: R::Receiver,
-    _phantom: PhantomData<(R, S)>,
 }
 
-impl<R, S> Scheduler<R, S>
+impl<R> Default for Scheduler<R>
 where
     R: Runtime,
-    S: Sleep,
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<R> Scheduler<R>
+where
+    R: Runtime,
 {
     pub fn new() -> Self {
         let (sender, receiver) = R::channel();
-        Self {
-            sender,
-            receiver,
-            _phantom: PhantomData,
-        }
+        Self { sender, receiver }
     }
-    pub fn via<F, Future>(&self, duration: S::T, f: F)
+    pub fn via<F, Future>(&self, duration: R::Duration, f: F)
     where
         F: FnOnce() -> Future + Send + Sync + 'static,
         Future: std::future::Future + Send + 'static,
         Future::Output: Send + Sync + 'static,
     {
         R::spawn(move || async move {
-            S::sleep(duration).await;
+            R::sleep(duration).await;
             f().await
         });
     }
@@ -55,10 +56,9 @@ where
             loop {
                 match receiver.try_recv().await {
                     Ok(event) => {
-                        if let Event::Destroy { to } = event {
-                            if id == to {
-                                break;
-                            }
+                        let Event::Destroy { to } = event;
+                        if id == to {
+                            break;
                         }
                     }
                     Err(_) => {
@@ -72,7 +72,10 @@ where
             }
         });
     }
-    pub async fn send_event(&self, event: Event) -> Result<(), <<R as Runtime>::Sender as Sender>::Error> {
+    pub async fn send_event(
+        &self,
+        event: Event,
+    ) -> Result<(), <<R as Runtime>::Sender as Sender>::Error> {
         self.sender.send(event).await
     }
 }
