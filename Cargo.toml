@@ -8,7 +8,7 @@ members = ["nebulas-core"]
 resolver = "2"
 
 [dependencies]
-nebulas-core = { path = "nebulas-core", optional = true }
+nebulas-core = { path = "nebulas-core" }
 tokio = { version = "1.39.2", features = ["rt-multi-thread", "sync", "time", "rt"], optional = true }
 
 [features]
