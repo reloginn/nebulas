@@ -3,6 +3,16 @@ name = "nebulas"
 version = "0.1.0"
 edition = "2021"
 
+[workspace]
+members = ["nebulas-core"]
+resolver = "2"
+
 [dependencies]
-tokio = { version = "1.39.1", features = ["sync", "time", "rt-multi-thread"] }
-chrono = "0.4.38"
+nebulas-core = { path = "nebulas-core", optional = true }
+tokio = { version = "1.39.2", features = ["rt-multi-thread", "sync", "time", "rt"], optional = true }
+
+[features]
+default = ["chrono", "tokio"]
+tokio = ["dep:tokio"]
+chrono = ["nebulas-core/chrono"]
+other-rt = []
