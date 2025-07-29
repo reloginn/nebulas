@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-chrono = { version = "0.4.38", optional = true }
+chrono = { version = "0", optional = true }
+futures = "0"
 
 [features]
 default = ["chrono"]
 chrono = ["dep:chrono"]
-

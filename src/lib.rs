@@ -1,13 +1,13 @@
 #![allow(clippy::manual_async_fn)]
 
-#[cfg(any(feature = "tokio", not(feature = "other-rt")))]
+#[cfg(feature = "tokio")]
 pub mod tokio;
 
-#[cfg(any(feature = "tokio", not(feature = "other-rt")))]
-pub use self::tokio::{receiver::TokioReceiver, sender::TokioSender, Scheduler, Tokio};
+#[cfg(feature = "tokio")]
+pub use self::tokio::{Scheduler, Tokio, receiver::TokioReceiver, sender::TokioSender};
 
-#[cfg(any(feature = "other-rt", not(feature = "tokio")))]
+#[cfg(not(feature = "tokio"))]
 pub use nebulas_core::{
-    rt::{receiver::Receiver, sender::Sender, Runtime},
-    scheduler::{event::Event, Scheduler},
+    rt::{Runtime, receiver::Receiver, sender::Sender},
+    scheduler::{Scheduler, event::Event},
 };

@@ -1,5 +1,5 @@
 #[derive(Copy, Clone, Eq, PartialEq)]
-#[repr(usize)]
 pub enum Event {
-    Destroy { to: &'static [u8] },
+    Shutdown { to: usize },
+    Freeze { to: usize, on: std::time::Duration },
 }
