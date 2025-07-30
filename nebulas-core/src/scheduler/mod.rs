@@ -81,7 +81,7 @@ where
     }
     pub fn every<F, Future>(&self, id: usize, every: Duration, f: F)
     where
-        F: Fn() -> Future + Send + Sync + 'static,
+        F: Fn() -> Future + Send + 'static,
         Future: std::future::Future + Send + Sync + 'static,
         Future::Output: Send + Sync + 'static,
     {
