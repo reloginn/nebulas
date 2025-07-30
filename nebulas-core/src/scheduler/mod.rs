@@ -82,7 +82,7 @@ where
     pub fn every<F, Future>(&self, id: usize, every: Duration, f: F)
     where
         F: Fn() -> Future + Send + 'static,
-        Future: std::future::Future + Send + Sync + 'static,
+        Future: std::future::Future + Send + 'static,
         Future::Output: Send + Sync + 'static,
     {
         let mut receiver = self.receiver.clone();
